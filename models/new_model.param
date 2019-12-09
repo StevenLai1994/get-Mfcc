@@ -1,0 +1,48 @@
+7767517
+46 46
+Input            Mfcc__0                  0 1 Mfcc__0
+Permute          Transpose                1 1 Mfcc__0 Mfcc__0_transpose 0=3
+Reshape          reshape                  1 1 Mfcc__0_transpose Reshape_0 0=1 1=1 2=990
+Permute          Transpose1               1 1 Reshape_0 Reshape_0_transpose 0=3
+Reshape          reshape1                 1 1 Reshape_0_transpose Reshape_1_0 0=10 1=99 2=1
+Convolution      convolution              1 1 Reshape_1_0 DS_CNN_conv_1_Conv2D_0 0=64 1=4 11=10 2=1 12=1 3=2 13=2 4=-233 5=0 6=2560
+BatchNorm        batchnorm                1 1 DS_CNN_conv_1_Conv2D_0 DS_CNN_conv_1_BiasAdd_0 0=64
+BatchNorm        batchnorm1               1 1 DS_CNN_conv_1_BiasAdd_0 DS_CNN_conv_1_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation               1 1 DS_CNN_conv_1_batch_norm_FusedBatchNorm_0 DS_CNN_conv_1_batch_norm_Relu_0
+ConvolutionDepthWise convolution1             1 1 DS_CNN_conv_1_batch_norm_Relu_0 DS_CNN_conv_ds_1_dw_conv_depthwise_0 0=64 1=3 11=3 2=1 12=1 3=1 13=1 4=-233 5=0 6=576 7=64
+BatchNorm        batchnorm2               1 1 DS_CNN_conv_ds_1_dw_conv_depthwise_0 DS_CNN_conv_ds_1_dw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm3               1 1 DS_CNN_conv_ds_1_dw_conv_BiasAdd_0 DS_CNN_conv_ds_1_dw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation1              1 1 DS_CNN_conv_ds_1_dw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_1_dw_conv_batch_norm_Relu_0
+Convolution      convolution2             1 1 DS_CNN_conv_ds_1_dw_conv_batch_norm_Relu_0 DS_CNN_conv_ds_1_pw_conv_Conv2D_0 0=64 1=1 11=1 2=1 12=1 3=1 13=1 4=-233 5=0 6=4096
+BatchNorm        batchnorm4               1 1 DS_CNN_conv_ds_1_pw_conv_Conv2D_0 DS_CNN_conv_ds_1_pw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm5               1 1 DS_CNN_conv_ds_1_pw_conv_BiasAdd_0 DS_CNN_conv_ds_1_pw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation2              1 1 DS_CNN_conv_ds_1_pw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_1_pw_conv_batch_norm_Relu_0
+ConvolutionDepthWise convolution3             1 1 DS_CNN_conv_ds_1_pw_conv_batch_norm_Relu_0 DS_CNN_conv_ds_2_dw_conv_depthwise_0 0=64 1=3 11=3 2=1 12=1 3=1 13=1 4=-233 5=0 6=576 7=64
+BatchNorm        batchnorm6               1 1 DS_CNN_conv_ds_2_dw_conv_depthwise_0 DS_CNN_conv_ds_2_dw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm7               1 1 DS_CNN_conv_ds_2_dw_conv_BiasAdd_0 DS_CNN_conv_ds_2_dw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation3              1 1 DS_CNN_conv_ds_2_dw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_2_dw_conv_batch_norm_Relu_0
+Convolution      convolution4             1 1 DS_CNN_conv_ds_2_dw_conv_batch_norm_Relu_0 DS_CNN_conv_ds_2_pw_conv_Conv2D_0 0=64 1=1 11=1 2=1 12=1 3=1 13=1 4=-233 5=0 6=4096
+BatchNorm        batchnorm8               1 1 DS_CNN_conv_ds_2_pw_conv_Conv2D_0 DS_CNN_conv_ds_2_pw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm9               1 1 DS_CNN_conv_ds_2_pw_conv_BiasAdd_0 DS_CNN_conv_ds_2_pw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation4              1 1 DS_CNN_conv_ds_2_pw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_2_pw_conv_batch_norm_Relu_0
+ConvolutionDepthWise convolution5             1 1 DS_CNN_conv_ds_2_pw_conv_batch_norm_Relu_0 DS_CNN_conv_ds_3_dw_conv_depthwise_0 0=64 1=3 11=3 2=1 12=1 3=1 13=1 4=-233 5=0 6=576 7=64
+BatchNorm        batchnorm10              1 1 DS_CNN_conv_ds_3_dw_conv_depthwise_0 DS_CNN_conv_ds_3_dw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm11              1 1 DS_CNN_conv_ds_3_dw_conv_BiasAdd_0 DS_CNN_conv_ds_3_dw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation5              1 1 DS_CNN_conv_ds_3_dw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_3_dw_conv_batch_norm_Relu_0
+Convolution      convolution6             1 1 DS_CNN_conv_ds_3_dw_conv_batch_norm_Relu_0 DS_CNN_conv_ds_3_pw_conv_Conv2D_0 0=64 1=1 11=1 2=1 12=1 3=1 13=1 4=-233 5=0 6=4096
+BatchNorm        batchnorm12              1 1 DS_CNN_conv_ds_3_pw_conv_Conv2D_0 DS_CNN_conv_ds_3_pw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm13              1 1 DS_CNN_conv_ds_3_pw_conv_BiasAdd_0 DS_CNN_conv_ds_3_pw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation6              1 1 DS_CNN_conv_ds_3_pw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_3_pw_conv_batch_norm_Relu_0
+ConvolutionDepthWise convolution7             1 1 DS_CNN_conv_ds_3_pw_conv_batch_norm_Relu_0 DS_CNN_conv_ds_4_dw_conv_depthwise_0 0=64 1=3 11=3 2=1 12=1 3=1 13=1 4=-233 5=0 6=576 7=64
+BatchNorm        batchnorm14              1 1 DS_CNN_conv_ds_4_dw_conv_depthwise_0 DS_CNN_conv_ds_4_dw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm15              1 1 DS_CNN_conv_ds_4_dw_conv_BiasAdd_0 DS_CNN_conv_ds_4_dw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation7              1 1 DS_CNN_conv_ds_4_dw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_4_dw_conv_batch_norm_Relu_0
+Convolution      convolution8             1 1 DS_CNN_conv_ds_4_dw_conv_batch_norm_Relu_0 DS_CNN_conv_ds_4_pw_conv_Conv2D_0 0=64 1=1 11=1 2=1 12=1 3=1 13=1 4=-233 5=0 6=4096
+BatchNorm        batchnorm16              1 1 DS_CNN_conv_ds_4_pw_conv_Conv2D_0 DS_CNN_conv_ds_4_pw_conv_BiasAdd_0 0=64
+BatchNorm        batchnorm17              1 1 DS_CNN_conv_ds_4_pw_conv_BiasAdd_0 DS_CNN_conv_ds_4_pw_conv_batch_norm_FusedBatchNorm_0 0=64
+ReLU             activation8              1 1 DS_CNN_conv_ds_4_pw_conv_batch_norm_FusedBatchNorm_0 DS_CNN_conv_ds_4_pw_conv_batch_norm_Relu_0
+Pooling          pooling                  1 1 DS_CNN_conv_ds_4_pw_conv_batch_norm_Relu_0 DS_CNN_avg_pool_AvgPool_0 0=1 1=5 11=50 2=2 12=2 5=1 6=0
+Reshape          Reshape                  1 1 DS_CNN_avg_pool_AvgPool_0 DS_CNN_avg_pool_AvgPool_0_reshaped 0=64
+InnerProduct     innerProduct             1 1 DS_CNN_avg_pool_AvgPool_0_reshaped innerProduct_buffer 0=4 1=1 2=256
+Reshape          Reshape1                 1 1 innerProduct_buffer DS_CNN_fc1_BiasAdd_0 0=1 1=1 2=4
+Softmax          softmax                  1 1 DS_CNN_fc1_BiasAdd_0 labels_softmax__0 0=0 1=1
