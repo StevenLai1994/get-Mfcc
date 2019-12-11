@@ -50,7 +50,7 @@ void Mfcc::show_info() {
 }
 
 void Mfcc::init() {
-    this->test_path = "/home/laijj/workspace/datas/speech_dataset/others/bnhey004sec51.wav";
+    this->test_path = "./test_datas/key_word.wav";
     this->sample_rate = 16000;
     this->voice_samples = 32000;
     this->window_size = 640;
@@ -69,17 +69,17 @@ void Mfcc::init() {
 }
 
 // functions
-float* Mfcc::get_strings_from_bytes(byte* bytes) {
+float* Mfcc::get_datas_from_string(byte* voice_string) {
     float* ret = new float[voice_samples];
-    int16* data = (int16*)bytes;
+    int16* data = (int16*)voice_string;
     for(int i=0; i<voice_samples; i++) {
         ret[i] = (float)data[i];
     }
     return ret;
 }
 
-float* Mfcc::get_strings_from_wav(const char* path) {
-    FILE* fp = fopen(path, "rb");
+float* Mfcc::get_datas_from_file(const char* file_path) {
+    FILE* fp = fopen(file_path, "rb");
     char* buffer = NULL;
     int bbytes = voice_samples*2 + 44;
     if(fp != NULL) {
@@ -87,7 +87,9 @@ float* Mfcc::get_strings_from_wav(const char* path) {
         fread(buffer, bbytes, 1, fp);
     }
     fclose(fp);
-    return get_strings_from_bytes(buffer + 44);
+    float* ret = get_datas_from_string(buffer + 44);
+    delete[] buffer;
+    return ret;
 }
 
 void Mfcc::preemp(float* datas, float preemph) {
@@ -111,9 +113,10 @@ float** Mfcc::frame_seg(float* datas, int16 window_size, int16 step_size) {
 }
 
 float* Mfcc::single_dft(float* frames, int16 nfft) {
-    //return shape (99, 513)
+    //太慢了没用
     //对分帧加窗后的各帧信号进行DFT变换得到各帧的频谱
 	//并对语音信号的频谱取模平方得到语音信号的功率谱
+    //return shape (99, 513)
     float* tmp_datas = new float[nfft]();
     memcpy(tmp_datas, frames, window_size*sizeof(float));
     float* ret = new float[nfft / 2 + 1];
@@ -277,12 +280,16 @@ float** Mfcc::mfcc(float* datas) {
     return ret;
 }
 
-float** Mfcc::mfcc_string(byte* bytes) {
-    float* datas = get_strings_from_bytes(bytes);
-    return mfcc(datas);
+float** Mfcc::mfcc_from_string(byte* bytes) {
+    float* datas = get_datas_from_string(bytes);
+    float** ret = mfcc(datas);
+    delete[] datas;
+    return ret;
 }
 
-float** Mfcc::mfcc_file(const char* file_path) {
-    float* datas = get_strings_from_wav(file_path);
-    return mfcc(datas);
+float** Mfcc::mfcc_from_file(const char* file_path) {
+    float* datas = get_datas_from_file(file_path);
+    float** ret = mfcc(datas);
+    delete[] datas;
+    return ret;
 }

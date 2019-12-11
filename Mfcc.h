@@ -41,8 +41,8 @@ class Mfcc {
         void init();
 
         //functions
-        float* get_strings_from_bytes(byte* bytes);    //单声道，双精度， 16K, 一次处理32000个采样点, 64000bytes
-        float* get_strings_from_wav(const char* path);    //单声道，双精度， 16K, 一次处理2秒， wav文件44bytes头
+        float* get_datas_from_string(byte* voice_string);    //单声道，双精度， 16K, 一次处理32000个采样点, 64000bytes
+        float* get_datas_from_file(const char* file_path);    //单声道，双精度， 16K, 一次处理2秒， wav文件44bytes头
         void preemp(float* datas, float preemph=0.97);
         float** frame_seg(float* datas, int16 window_size, int16 step_size);
         float* single_dft(float* frames, int16 nfft); //单帧的dft
@@ -53,6 +53,6 @@ class Mfcc {
         float** filte_and_log(float** frames, float** filters, int fbank_count, int nfft);
         float** dct2(float** mfcc_logf, int16 dct_count, int16 fbank_count, int16 ceplifter);
         float** mfcc(float* datas);
-        float** mfcc_string(byte* bytes);
-        float** mfcc_file(const char* file_path);
+        float** mfcc_from_string(byte* bytes);
+        float** mfcc_from_file(const char* file_path);
 };
