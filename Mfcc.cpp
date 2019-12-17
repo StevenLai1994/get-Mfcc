@@ -1,7 +1,4 @@
 #pragma once
-#include <iostream>
-#include <cmath>
-#include <cstring>
 #include "Mfcc.h"
 
 //utils
@@ -112,7 +109,7 @@ float** Mfcc::frame_seg(float* datas, int16 window_size, int16 step_size) {
     return ret;
 }
 
-float* Mfcc::single_dft(float* frames, int16 nfft) {
+float* Mfcc::single_dft(float* frames, int16 window_size, int16 nfft) {
     //太慢了没用
     //对分帧加窗后的各帧信号进行DFT变换得到各帧的频谱
 	//并对语音信号的频谱取模平方得到语音信号的功率谱
@@ -135,7 +132,7 @@ float* Mfcc::single_dft(float* frames, int16 nfft) {
     return ret;
 }
 
-float* Mfcc::single_fft(float* frames, int16 nfft) {   
+float* Mfcc::single_fft(float* frames, int16 window_size, int16 nfft) {   
     //对单帧的快速傅里叶变换
     //return shape (99, 513)
     float* tmp_datas = new float[nfft];
@@ -188,7 +185,7 @@ float Mfcc::hz2mel(float hz) {
     return 2595 * log10(1 + hz/700);
 }
 
-float** Mfcc::get_melfilter(float lf, float hf, int16 fbank_count, int16 nfft) {
+float** Mfcc::get_melfilter(float lf, float hf, int sample_rate, int16 fbank_count, int16 nfft) {
     //获取梅尔滤波器
     float mell = hz2mel(lf);
     float melh = hz2mel(hf);
@@ -213,23 +210,105 @@ float** Mfcc::get_melfilter(float lf, float hf, int16 fbank_count, int16 nfft) {
     return ret;
 }
 
-float** Mfcc::filte_and_log(float** frames, float** filters, int fbank_count, int nfft) {
+void Mfcc::filte_and_log(float** frames, float** filters, float** mfcc_logf,
+        int16 window_size, int16 time_step, int16 fbank_count, int16 nfft) {
     //return shape (99, 40)
     int16 fft_size = nfft /2 + 1;
-    float** ret = (float**)create_2ddata(time_step, fbank_count, sizeof(float));
     for(int step=0; step<time_step; step++) {
-        float* step_fft = single_fft(frames[step], nfft);   //1 * 513;
+        float* step_fft = single_fft(frames[step], window_size, nfft);   //1 * 513;
         for(int f=0; f < fbank_count; f++) {
             float tmp_val = dot_mul(step_fft, filters[f], fft_size);
             tmp_val = log(tmp_val);
             if(tmp_val == 0)
                 tmp_val = 0.00001;
-            ret[step][f] = tmp_val;
+            mfcc_logf[step][f] = tmp_val;
         }
         delete[] step_fft;
     }
-    return ret;
+    clock_t e_clock = clock();
+    // printf("%d个fft, filte, log 多线程耗时%.4f ms\n", time_step, get_time(e_clock, s_clock));
 }
+
+void Mfcc::filte_and_log_and_dct2(float** frames, float** filters, float** dct_mfcc_logf, float* lifter,
+        int16 window_size, int16 time_step, int16 fbank_count, int16 nfft, int16 dct_count, int16 ceplifter, float f0, float f1) {
+    //return shape (time_step, dct_count)
+    int16 fft_size = nfft /2 + 1;
+    float* mfcc_logf = new float[fbank_count];      //1 * 40 存放单个时间步的临时mfcc_logf
+    for(int step=0; step<time_step; step++) {
+        float* step_fft = single_fft(frames[step], window_size, nfft);   //1 * 513;
+        for(int f=0; f < fbank_count; f++) {
+            float tmp_val = dot_mul(step_fft, filters[f], fft_size);
+            tmp_val = log(tmp_val);
+            if(tmp_val == 0)
+                tmp_val = 0.00001;
+            mfcc_logf[f] = tmp_val;
+        }
+        //dct2
+        for(int i=0; i<dct_count; i++) {
+            float sum = 0;
+            for(int j=0; j<fbank_count; j++) {
+                sum += mfcc_logf[j] * cos(PI * i * (2 * j + 1)/(2 * fbank_count));
+            }
+            if(i == 0) {
+                dct_mfcc_logf[step][i] = f0 * 2 * sum;
+            }
+            else {
+                dct_mfcc_logf[step][i] = f1 * 2 * sum;
+            }
+            dct_mfcc_logf[step][i] *= lifter[i];
+
+        }
+        delete[] step_fft;
+    }
+    delete[] mfcc_logf;
+}
+
+void Mfcc::multi_filte_and_log_and_dct2(float** frames, float** filters, float** dct_mfcc_logf,
+        int16 window_size, int16 time_step, int16 fbank_count, int16 nfft, int16 dct_count, int16 ceplifter) {
+    //多线程 fft + 梅尔滤波 + log + dct2
+    //result shape (99, 10)
+    int16 avg = time_step / num_cpu;
+    int16 remain = time_step % num_cpu;
+    int16 shift = 0;
+
+    //make lifter
+    float* lifter = new float[dct_count];
+    for(int i=0; i<dct_count; i++) {
+        if(ceplifter > 0) {
+            lifter[i] = 1 + ceplifter / 2.0 * sin(PI * i / ceplifter);
+        }
+        else {
+            lifter[i] = 1;
+        }
+    }
+    //dct2系数
+    float f0 = sqrt(1.0 / (4 * fbank_count));
+    float f1 = sqrt(1.0 / (2 * fbank_count));
+
+    // =============1=============
+    std::thread* threads = new std::thread[num_cpu-1];
+    for(int16 i=0; i<num_cpu-1; i++) {
+        int16 batch_size = (remain > 0)?(avg+1):avg;
+        float** frames_batch = frames + shift;
+        float** mfcc_logf_batch = dct_mfcc_logf + shift;
+        threads[i] = std::thread(filte_and_log_and_dct2, frames_batch, filters, mfcc_logf_batch, lifter, window_size, batch_size,
+                fbank_count, nfft, dct_count, ceplifter, f0, f1);
+        shift += batch_size;
+        --remain;
+    }
+    
+    int16 batch_size = (remain > 0)?(avg+1):avg;
+    float** frames_batch = frames + shift;
+    float** mfcc_logf_batch = dct_mfcc_logf + shift;
+    filte_and_log_and_dct2(frames_batch, filters, mfcc_logf_batch, lifter, window_size, batch_size,
+            fbank_count, nfft, dct_count, ceplifter, f0, f1);
+    for(int16 i=0; i<num_cpu-1; i++) {
+        threads[i].join();
+    }
+    delete[] lifter;
+    delete[] threads;
+}
+
 
 float** Mfcc::dct2(float** mfcc_logf, int16 dct_count, int16 fbank_count, int16 ceplifter) {
     //离散余弦变换II, ortho
@@ -271,13 +350,16 @@ float** Mfcc::dct2(float** mfcc_logf, int16 dct_count, int16 fbank_count, int16 
 float** Mfcc::mfcc(float* datas) {
     preemp(datas);//预加重
     float** frames = frame_seg(datas, window_size, step_size);
-    float** melfilters = get_melfilter(lf, hf, fbank_count, nfft);
-    float** mfcc_logf = filte_and_log(frames, melfilters, fbank_count, nfft);
+    float** melfilters = get_melfilter(lf, hf, sample_rate, fbank_count, nfft);
+    float** dct_mfcc_logf = (float**)create_2ddata(time_step, dct_count, sizeof(float));
+    // filte_and_log(frames, melfilters, mfcc_logf, window_size, time_step, fbank_count, nfft);
+    multi_filte_and_log_and_dct2(frames, melfilters, dct_mfcc_logf, window_size,
+            time_step, fbank_count, nfft, dct_count, ceplifter);
     delete_2ddata((void**)melfilters, fbank_count);
     delete_2ddata((void**)frames, time_step);
-    float** ret = dct2(mfcc_logf, dct_count, fbank_count, ceplifter);
-    delete_2ddata((void**)mfcc_logf, time_step);
-    return ret;
+    // float** ret = dct2(mfcc_logf, dct_count, fbank_count, ceplifter);
+    // delete_2ddata((void**)mfcc_logf, time_step);
+    return dct_mfcc_logf;
 }
 
 float** Mfcc::mfcc_from_string(byte* bytes) {
