@@ -1,5 +1,8 @@
 #pragma once
 #include<cstdio>
+#include<ctime>
+
+#define get_time(e, s) ((e - s) * 1000.0 / CLOCKS_PER_SEC)
 
 typedef unsigned char uchar;
 typedef short int16;
