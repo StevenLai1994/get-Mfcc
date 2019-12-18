@@ -190,7 +190,7 @@ float** Mfcc::get_melfilter(float lf, float hf, int sample_rate, int16 fbank_cou
     float mell = hz2mel(lf);
     float melh = hz2mel(hf);
     float seg = (melh - mell) / (fbank_count + 1);
-    int16* bin = new int16[fbank_count];
+    int16* bin = new int16[fbank_count+2];
     float frac = (nfft + 1.0) / sample_rate;
     float nowf = mell;
     for(int i=0; i<fbank_count+2; i++) {
