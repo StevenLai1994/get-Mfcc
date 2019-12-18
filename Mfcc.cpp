@@ -231,6 +231,7 @@ void Mfcc::filte_and_log(float** frames, float** filters, float** mfcc_logf,
 
 void Mfcc::filte_and_log_and_dct2(float** frames, float** filters, float** dct_mfcc_logf, float* lifter,
         int16 window_size, int16 time_step, int16 fbank_count, int16 nfft, int16 dct_count, int16 ceplifter, float f0, float f1) {
+    //对timestep个帧进行 fft --> 滤波 --> 取对数 --> dct2
     //return shape (time_step, dct_count)
     int16 fft_size = nfft /2 + 1;
     float* mfcc_logf = new float[fbank_count];      //1 * 40 存放单个时间步的临时mfcc_logf
