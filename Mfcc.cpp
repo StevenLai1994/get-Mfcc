@@ -212,6 +212,7 @@ float** Mfcc::get_melfilter(float lf, float hf, int sample_rate, int16 fbank_cou
 
 void Mfcc::filte_and_log(float** frames, float** filters, float** mfcc_logf,
         int16 window_size, int16 time_step, int16 fbank_count, int16 nfft) {
+    //对time_step个帧进行 fft --> 滤波 --> 取对数
     //return shape (99, 40)
     int16 fft_size = nfft /2 + 1;
     for(int step=0; step<time_step; step++) {
@@ -231,7 +232,7 @@ void Mfcc::filte_and_log(float** frames, float** filters, float** mfcc_logf,
 
 void Mfcc::filte_and_log_and_dct2(float** frames, float** filters, float** dct_mfcc_logf, float* lifter,
         int16 window_size, int16 time_step, int16 fbank_count, int16 nfft, int16 dct_count, int16 ceplifter, float f0, float f1) {
-    //对timestep个帧进行 fft --> 滤波 --> 取对数 --> dct2
+    //对time_step个帧进行 fft --> 滤波 --> 取对数 --> dct2
     //return shape (time_step, dct_count)
     int16 fft_size = nfft /2 + 1;
     float* mfcc_logf = new float[fbank_count];      //1 * 40 存放单个时间步的临时mfcc_logf
@@ -364,6 +365,7 @@ float** Mfcc::mfcc(float* datas) {
 }
 
 float** Mfcc::mfcc_from_string(byte* bytes) {
+    //调用 从音频流获取梅尔特征
     float* datas = get_datas_from_string(bytes);
     float** ret = mfcc(datas);
     delete[] datas;
@@ -371,6 +373,7 @@ float** Mfcc::mfcc_from_string(byte* bytes) {
 }
 
 float** Mfcc::mfcc_from_file(const char* file_path) {
+    //调用 从音频文件获取梅尔特征
     float* datas = get_datas_from_file(file_path);
     float** ret = mfcc(datas);
     delete[] datas;

@@ -18,7 +18,7 @@ typedef char byte;
 //2s 16k/s16bit 单声道音频
 const float PI = 3.1415926535898;
 const int16 num_cpu = std::thread::hardware_concurrency();
-// const int16 num_cpu = 3;
+// const int16 num_cpu = 4;
 
 struct complex {
     float x,y;
